@@ -1,10 +1,15 @@
 fileFormatVersion: 2
 guid: 6ddb66e4d819f4468a944ea98c4e21c2
-timeCreated: 1441486079
+timeCreated: 1441670427
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - curved: {fileID: 186008, guid: a44c60ceaacf2422ca0a338455e2b11c, type: 2}
+  - doubleCurved: {fileID: 134006, guid: e58f409b6c29b4ea0badf3a9a7472cd5, type: 2}
+  - straight: {fileID: 187254, guid: 5ca3cceb313c54bc3979b9fa92e18e79, type: 2}
+  - doubleStraight: {fileID: 185730, guid: 311728018c0334f80a66aa11b4e821bd, type: 2}
+  - camera: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
