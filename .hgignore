@@ -4,3 +4,7 @@ Temp
 bin
 obj
 *.userprefs
+Sequence-train-ui.sln
+Assembly-CSharp-vs.csproj
+Assembly-CSharp.csproj
+Sequence-train-ui-csharp.sln

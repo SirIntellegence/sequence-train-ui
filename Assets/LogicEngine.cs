@@ -3,21 +3,37 @@ using System.Collections;
 using SequenceTrainLogic;
 using System;
 using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 
 public class LogicEngine : MonoBehaviour {
-	public GameObject curved, doubleCurved, straight, doubleStraight;
+	public GameObject curved, doubleCurved, straight, doubleStraight,
+		trainEngine, caboose, trainCar;
 	public int width, length;
 	public ulong seed;
 	public bool trainCanCrashWithSelf;
 	public int blockSections = 100;
 	public new Camera camera;
-	private float tileSize = 10;
+	public bool canSwapOutTrackUnderTrain;
+	public int trainCarLength;
+	public int couplingLength;
+	public Color[] trainCarColors;
+	public Material baseTrainCarTexture;
+	private float _tileSize = 10;
 	private SequenceTrainEngine engine;
 	private GameObject[,] grid;
+	private TrainCarHandler trainEngineHandler, cabooseObject;
+	private List<TrainCarHandler> trainCars = new List<TrainCarHandler>(10);
 	private bool doTick = true;
+	private float calculatedObjectLength;
+	private Material[] materialColors;
+	internal float tileSize{ get { return _tileSize; } }
+	internal float calculatedCarLenth{ get { return calculatedObjectLength; } }
+
 
 	// Use this for initialization
 	void Start () {
+		materialColors = new Material[trainCarColors.Length];
 		if (camera == null){
 			throw new InvalidOperationException("camera is null!");
 		}
@@ -38,10 +54,16 @@ public class LogicEngine : MonoBehaviour {
 		options.gridHeight = length;
 		options.trainCanCrashWithSelf = trainCanCrashWithSelf;
 		options.blockSections = blockSections;
+		options.canSwapOutTrackUnderTrain = canSwapOutTrackUnderTrain;
+		options.couplingLength = couplingLength;
+		options.trainCarLength = trainCarLength;
+		calculatedObjectLength = _tileSize * trainCarLength / blockSections;
+		SequenceTrainEngine.DebugLogEvent += (sender, e) => Debug.Log(e.thing);
 		engine = new SequenceTrainEngine(options);
+		addHandlers();
 		grid = new GameObject[width, length];
-		float cameraWidth = tileSize * width;
-		float cameraHeight = tileSize * length;
+		float cameraWidth = _tileSize * width;
+		float cameraHeight = _tileSize * length;
 		float newCameraSize;// = mainCamera.orthographicSize;
 		if (camera.aspect > 1){
 			newCameraSize = cameraHeight / 2;
@@ -57,10 +79,17 @@ public class LogicEngine : MonoBehaviour {
 				grid[x, y] = item;
 			}
 		}
+		GameObject trainObject = TrainCarHandler.createGameObject(engine.trainList[0],
+			this);
+		trainEngineHandler = trainObject.GetComponent<TrainCarHandler>();
+		trainEngineHandler.positionSelf();
+		trainCars.Add(trainEngineHandler);
 		//place the camera
-		Vector3 cameraPos = new Vector3(cameraWidth / 2, 10, cameraHeight / 2 - 5);
+		Vector3 cameraPos = new Vector3(cameraWidth / 2, 10, -cameraHeight / 2 + 5);
 		camera.transform.position = cameraPos;
 	}
+
+
 
 	/// <summary>
 	/// Create a GameObject for the TrackBlock at this location
@@ -92,7 +121,7 @@ public class LogicEngine : MonoBehaviour {
 					trackBlock.getTrackType());
 		}
 		GameObject newObject = UnityEngine.Object.Instantiate(factoryObject);
-		placeItemInView(newObject, x, y);
+		placeBlockInView(newObject, x, y);
 		//rotate it so it matches the data backing.
 		Rotater rotater = newObject.GetComponent<Rotater>();
 		rotater.buildArray();
@@ -130,9 +159,27 @@ public class LogicEngine : MonoBehaviour {
 		return newObject;
 	}
 
-	void placeItemInView(GameObject item, int x, int y) {
-		float newX = x * tileSize;
-		float newZ = y * tileSize;
+	void addHandlers() {
+		engine.NewTrainCar += (sender, args) => {};
+		engine.TrainCarAttached += (sender, args) => {};
+	}
+
+	public void setColorForGameObject(GameObject trainObject, int trainIndex) {
+		int index = (trainIndex - 1) % materialColors.Length;
+		if (index < 0){
+			return;
+		}
+		Material m = materialColors[index];
+		if (m == null){
+			m = materialColors[index] = new Material(baseTrainCarTexture);
+			m.color = trainCarColors[index];
+		}
+		trainObject.GetComponent<Renderer>().material = m;
+	}
+
+	void placeBlockInView(GameObject item, int x, int y) {
+		float newX = x * _tileSize;
+		float newZ = -y * _tileSize;
 		Vector3 pos;
 		Vector3 add = new Vector3(newX, 0, newZ);
 		pos = add;
