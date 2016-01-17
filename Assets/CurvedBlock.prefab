@@ -413,9 +413,9 @@ MonoBehaviour:
   x: 0
   y: 0
   isTopObject: 0
-  north: 1
-  east: 2
-  south: 0
+  north: 0
+  east: 1
+  south: 2
   west: 0
 --- !u!1001 &100100000
 Prefab:
@@ -430,15 +430,15 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 0}
       propertyPath: north
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 0}
       propertyPath: east
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 0}
       propertyPath: south
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 0}
       propertyPath: west

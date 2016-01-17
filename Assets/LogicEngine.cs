@@ -19,6 +19,7 @@ public class LogicEngine : MonoBehaviour {
 	public int couplingLength;
 	public Color[] trainCarColors;
 	public Material baseTrainCarTexture;
+	public int speedCount;
 	private float _tileSize = 10;
 	private SequenceTrainEngine engine;
 	private GameObject[,] grid;
@@ -27,12 +28,14 @@ public class LogicEngine : MonoBehaviour {
 	private bool doTick = true;
 	private float calculatedObjectLength;
 	private Material[] materialColors;
+	private int lastX, lastY;
 	internal float tileSize{ get { return _tileSize; } }
 	internal float calculatedCarLenth{ get { return calculatedObjectLength; } }
 
 
 	// Use this for initialization
 	void Start () {
+		GameOver += (sender, e) => Debug.Log("Game over!");
 		materialColors = new Material[trainCarColors.Length];
 		if (camera == null){
 			throw new InvalidOperationException("camera is null!");
@@ -57,6 +60,7 @@ public class LogicEngine : MonoBehaviour {
 		options.canSwapOutTrackUnderTrain = canSwapOutTrackUnderTrain;
 		options.couplingLength = couplingLength;
 		options.trainCarLength = trainCarLength;
+		options.speedCount = speedCount;
 		calculatedObjectLength = _tileSize * trainCarLength / blockSections;
 		SequenceTrainEngine.DebugLogEvent += (sender, e) => Debug.Log(e.thing);
 		engine = new SequenceTrainEngine(options);
@@ -128,6 +132,7 @@ public class LogicEngine : MonoBehaviour {
 		rotater.parent = this;
 		rotater.x = x;
 		rotater.y = y;
+		rotater.name = String.Format("{0},{1}", x, y);
 		bool ok;
 		TrackEnds[] rotatedArray = trackBlock.getTrackEnds();
 //		StringBuilder logBuilder = new StringBuilder(100);
@@ -196,6 +201,9 @@ public class LogicEngine : MonoBehaviour {
 				//nothing changed
 				return;
 			}
+			foreach (var item in trainCars) {
+				item.positionSelf();
+			}
 		}
 		catch (GameOverException goe){
 			doTick = false;
@@ -203,6 +211,12 @@ public class LogicEngine : MonoBehaviour {
 				GameOver(this, new GameOverArgs(goe));
 			}
 		}
+//		if (trainCars[0].trainCar.x != lastX ||
+//		    trainCars[0].trainCar.y != lastY){
+//			lastX = trainCars[0].trainCar.x;
+//			lastY = trainCars[0].trainCar.y;
+//			Debug.LogFormat("Train is at {0},{1}", lastX, lastY);
+//		}
 	}
 
 	public class GameOverArgs : EventArgs{
@@ -230,11 +244,14 @@ public class LogicEngine : MonoBehaviour {
 		else{
 			sign = -1;
 		}
-		rotater.transform.rotation *= Quaternion.AngleAxis(90 * sign, Vector3.up);
-//		Debug.Log("Rotated " + rotater.x + ", " + rotater.y);
+		bool rotated = true;
 		if (!init){
-			engine[rotater.x, rotater.y].rotate(clockWize);
+			rotated = engine[rotater.x, rotater.y].rotate(clockWize);
 		}
+		if(rotated) {
+			rotater.transform.rotation *= Quaternion.AngleAxis(90 * sign, Vector3.up);
+		}
+//		Debug.Log("Rotated " + rotater.x + ", " + rotater.y);
 	}
 
 	public void DoRotate(Rotater rotater, bool clockWize) {

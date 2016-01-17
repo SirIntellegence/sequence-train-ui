@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using SequenceTrainLogic;
+using System;
 
 public class TrainCarHandler : MonoBehaviour {
 	private GameObject trainObject;
@@ -23,6 +24,29 @@ public class TrainCarHandler : MonoBehaviour {
 		Vector3 add = new Vector3(newX, 5, newZ);
 		//do more things later....
 		trainObject.transform.position = add;
+		var rotation = trainObject.transform.rotation;
+		var cardinal = trainCar.entry;
+		int angle = (int)cardinal;
+//		multiplier = (multiplier + 3) % 4;
+		//adjust things so north is north and east is east
+		switch (cardinal) {
+			case TrackSide.North:
+				angle = 0;
+				break;
+			case TrackSide.East:
+				angle = -90;
+				break;
+			case TrackSide.South:
+				angle = 180;
+				break;
+			case TrackSide.West:
+				angle = 90;
+				break;
+			default:
+				throw new ArgumentOutOfRangeException();
+		}
+		rotation = Quaternion.AngleAxis(angle, Vector3.up);// multiplier * 90;
+		trainObject.transform.rotation = rotation;
 	}
 
 	public static GameObject createGameObject(AbstractTrainCar trainCar,
